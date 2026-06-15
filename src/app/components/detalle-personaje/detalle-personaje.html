@@ -1,0 +1,60 @@
+<div class="container mx-auto p-6 font-sans max-w-2xl">
+  <button
+    routerLink="/"
+    class="mb-6 flex items-center gap-2 text-gray-600 hover:text-yellow-500 font-semibold transition-all"
+  >
+    ← Volver al directorio
+  </button>
+
+  @if (cargando) {
+    <div class="flex flex-col items-center justify-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+      <p class="mt-4 text-gray-500">Cargando datos de Springfield...</p>
+    </div>
+  } @else if (personaje) {
+    <div
+      class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 p-8 flex flex-col md:flex-row gap-8 items-center"
+    >
+      <div class="w-full md:w-1/2 flex justify-center bg-gray-50 rounded-2xl p-6 h-64 items-center">
+        <img
+          [src]="personaje.image || 'https://via.placeholder.com/200'"
+          [alt]="personaje.name"
+          class="max-h-full object-contain drop-shadow-lg"
+        />
+      </div>
+
+      <div class="w-full md:w-1/2 flex flex-col gap-4">
+        <div>
+          <span
+            class="text-xs uppercase font-extrabold tracking-widest text-yellow-500 bg-yellow-50 px-3 py-1 rounded-full"
+          >
+            Ficha Técnica
+          </span>
+          <h1 class="text-3xl font-black text-gray-800 mt-2">{{ personaje.name }}</h1>
+        </div>
+
+        <div class="border-t border-gray-100 my-2"></div>
+
+        <div class="flex flex-col gap-2 text-base">
+          <p class="text-gray-600">
+            <strong class="text-gray-800">Ocupación:</strong>
+            {{ personaje.occupation || 'Desconocido' }}
+          </p>
+          <p class="text-gray-600">
+            <strong class="text-gray-800">Estado:</strong> {{ personaje.status || 'Vivo' }}
+          </p>
+          <p class="text-gray-600">
+            <strong class="text-gray-800">Género:</strong>
+            {{ personaje.gender || 'No especificado' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="text-center py-20">
+      <p class="text-xl text-gray-400 font-semibold">
+        No se pudo encontrar la información de este personaje.
+      </p>
+    </div>
+  }
+</div>

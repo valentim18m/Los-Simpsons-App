@@ -1,36 +1,68 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Api } from '../../services/api';
+import { RouterLink } from '@angular/router';
+// import { ApiService } from '../../services/api.service'; // Comentado temporalmente
 
 @Component({
   selector: 'app-buscador',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './buscador.html',
 })
 export class BuscadorComponent implements OnInit {
-  // Inyectamos el servicio
-  private apiService = inject(Api);
+  // private apiService = inject(ApiService); // Comentado temporalmente
 
-  // Variables para guardar los datos
-  personajes: any[] = [];
-  personajesFiltrados: any[] = [];
+  // 1. Agregamos los personajes manualmente (Mock Data)
+  personajes: any[] = [
+    {
+      id: 1,
+      name: 'Homer Simpson',
+      occupation: 'Inspector de Seguridad',
+      image:
+        'https://cdn.glitch.com/3c3ffadc-3406-4440-bb95-d40ec8fcde72%2FHomerSimpson.png?1497567511939',
+    },
+    {
+      id: 2,
+      name: 'Marge Simpson',
+      occupation: 'Ama de casa',
+      image:
+        'https://cdn.glitch.com/3c3ffadc-3406-4440-bb95-d40ec8fcde72%2FMargeSimpson.png?1497567512205',
+    },
+    {
+      id: 3,
+      name: 'Bart Simpson',
+      occupation: 'Estudiante',
+      image:
+        'https://cdn.glitch.com/3c3ffadc-3406-4440-bb95-d40ec8fcde72%2FBartSimpson.png?1497567511638',
+    },
+    {
+      id: 4,
+      name: 'Lisa Simpson',
+      occupation: 'Estudiante y Saxofonista',
+      image:
+        'https://cdn.glitch.com/3c3ffadc-3406-4440-bb95-d40ec8fcde72%2FLisaSimpson.png?1497567512083',
+    },
+  ];
+
+  // 2. Inicializamos la lista filtrada con los mismos datos
+  personajesFiltrados: any[] = [...this.personajes];
   terminoBusqueda: string = '';
 
   ngOnInit() {
-    // Consumimos la API al iniciar el componente
+    // Si la API falla o está incompleta, los datos manuales ya están en pantalla
+    /*
     this.apiService.getCharacters().subscribe({
       next: (res: any) => {
-        // Guardamos los datos originales y la copia para filtrar
-        this.personajes = res.data || res;
-        this.personajesFiltrados = this.personajes;
+        // En un escenario real con la API descomentamos esto:
+        // this.personajes = res.data || res;
+        // this.personajesFiltrados = this.personajes;
       },
-      error: (err) => console.error('Error al cargar la API', err),
+      error: (err) => console.error('Error al cargar la API', err)
     });
+    */
   }
 
-  // Función que se ejecuta cada vez que el usuario escribe en el buscador
   filtrarPersonajes() {
     const termino = this.terminoBusqueda.toLowerCase();
     this.personajesFiltrados = this.personajes.filter((personaje) =>

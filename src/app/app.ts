@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { BuscadorComponent } from './components/buscador/buscador';
+import { BuscadorComponent } from "./components/buscador/buscador";
+
 
 @Component({
   selector: 'app-root',
