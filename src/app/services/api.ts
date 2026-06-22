@@ -38,14 +38,13 @@ export interface Location {
   image_path: string;
 }
 
-
 @Injectable({
   providedIn: 'root',
 })
 export class Api {
   private baseUrl = 'https://thesimpsonsapi.com/api';
 
-  // ¡Aquí está el cambio! Ahora apuntamos al CDN oficial que descubriste
+  // Ahora apuntamos al CDN oficial que descubriste
   readonly imageBaseUrl = 'https://cdn.thesimpsonsapi.com';
 
   constructor(private http: HttpClient) {}
@@ -54,15 +53,15 @@ export class Api {
   getImageUrl(path: string | null): string {
     if (!path) return '';
 
-    // 1. Detectamos qué sección estamos cargando para usar
+    //  Detectamos qué sección estamos cargando para usar
     let carpetaTamano = '500'; // Tamaño por defecto (personajes)
     if (path.includes('episode')) carpetaTamano = '200';
     if (path.includes('location')) carpetaTamano = '1280';
 
-    // 2. Nos aseguramos de que la ruta empiece con "/"
+    //  Nos aseguramos de que la ruta empiece con "/"
     const pathSeguro = path.startsWith('/') ? path : `/${path}`;
 
-    // 3. Unimos todo: Base CDN + Tamaño + Ruta del archivo
+    // Unimos todo: Base CDN + Tamaño + Ruta del archivo
     return `${this.imageBaseUrl}/${carpetaTamano}${pathSeguro}`;
   }
 
