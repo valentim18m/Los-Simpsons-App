@@ -15,10 +15,12 @@ export class EpisodiosComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   episodios: Episode[] = [];
+
+  // <-- EL CAJÓN SECRETO PARA EPISODIOS
+  todosLosEpisodios: Episode[] = [];
+
   episodiosFiltrados: Episode[] = [];
   temporadaSeleccionada: number | null = null;
-
-  // <-- AQUÍ ESTÁ TU NUEVA LÍNEA:
   terminoBusqueda: string = '';
 
   cargando: boolean = true;
@@ -31,6 +33,35 @@ export class EpisodiosComponent implements OnInit {
 
   ngOnInit() {
     this.cargarEpisodios();
+    this.obtenerCatalogoCompleto(); // <-- Descarga silenciosa
+  }
+
+  // <-- DESCARGA RECURSIVA PARA EPISODIOS
+  obtenerCatalogoCompleto(paginaSilenciosa: number = 1) {
+    this.apiService.getEpisodes(paginaSilenciosa, 100).subscribe({
+      next: (res: any) => {
+        const lista = Array.isArray(res.results) ? res.results : Array.isArray(res) ? res : [];
+
+        // Acumulamos los episodios
+        this.todosLosEpisodios = [...this.todosLosEpisodios, ...lista];
+
+        // El despertador: si el usuario ya escribió algo o eligió temporada, filtramos
+        if (this.terminoBusqueda || this.temporadaSeleccionada !== null) {
+          this.filtrarEpisodios();
+          this.cdr.detectChanges();
+        }
+
+        // Llamada recursiva si hay más páginas
+        if (res.next) {
+          this.obtenerCatalogoCompleto(paginaSilenciosa + 1);
+        } else {
+          console.log(
+            `✅ ¡Guía completa! Springfield tiene ${this.todosLosEpisodios.length} episodios en memoria.`,
+          );
+        }
+      },
+      error: () => console.warn('Aviso: Error bajando el catálogo de episodios en background'),
+    });
   }
 
   cargarEpisodios() {
@@ -39,38 +70,41 @@ export class EpisodiosComponent implements OnInit {
 
     this.apiService.getEpisodes(this.paginaActual, this.limite).subscribe({
       next: (res: any) => {
-        // La API devuelve { count, next, prev, pages, results: [...] }
         const lista = Array.isArray(res.results) ? res.results : Array.isArray(res) ? res : [];
         this.totalEpisodios = res.count ?? lista.length;
         this.episodios = lista;
 
         this.filtrarEpisodios();
 
-        // Apagamos el spinner
         this.cargando = false;
-        // ¡Despertamos a Angular para que muestre las tarjetas!
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al cargar episodios:', err);
         this.error = 'No se pudo conectar con la guía de episodios.';
         this.cargando = false;
-        // También redibujamos la pantalla en caso de error
         this.cdr.detectChanges();
       },
     });
   }
 
-  // <-- FUNCIÓN ACTUALIZADA: Ahora combina el buscador de texto + el botón de temporada
   filtrarEpisodios() {
     const termino = this.terminoBusqueda.toLowerCase().trim();
 
-    this.episodiosFiltrados = this.episodios.filter((e) => {
+    // Si no hay búsqueda ni filtro, mostramos la paginación normal
+    if (!termino && this.temporadaSeleccionada === null) {
+      this.episodiosFiltrados = [...this.episodios];
+      return;
+    }
+
+    // Si están buscando, tiramos del catálogo global
+    const baseDeDatos = this.todosLosEpisodios.length > 0 ? this.todosLosEpisodios : this.episodios;
+
+    this.episodiosFiltrados = baseDeDatos.filter((e) => {
       if (!e || typeof e.season === 'undefined') return false;
 
       const coincideTemporada =
         this.temporadaSeleccionada === null || e.season === this.temporadaSeleccionada;
-
       const coincideTexto = !termino || (e.name && e.name.toLowerCase().includes(termino));
 
       return coincideTemporada && coincideTexto;
@@ -87,14 +121,16 @@ export class EpisodiosComponent implements OnInit {
   }
 
   get temporadas(): number[] {
-    // ESCUDO: Evitamos que se rompa el menú si un episodio no tiene temporada asignada
-    const episodiosValidos = this.episodios.filter((e) => e && typeof e.season !== 'undefined');
+    // Leemos del cajón secreto para asegurar que todas las temporadas existan en los botones
+    const base = this.todosLosEpisodios.length > 0 ? this.todosLosEpisodios : this.episodios;
+    const episodiosValidos = base.filter((e) => e && typeof e.season !== 'undefined');
     const unicos = [...new Set(episodiosValidos.map((e) => e.season))];
     return unicos.sort((a, b) => a - b);
   }
 
   paginaSiguiente() {
     this.paginaActual++;
+    this.terminoBusqueda = '';
     this.temporadaSeleccionada = null;
     this.cargarEpisodios();
   }
@@ -102,6 +138,7 @@ export class EpisodiosComponent implements OnInit {
   paginaAnterior() {
     if (this.paginaActual > 1) {
       this.paginaActual--;
+      this.terminoBusqueda = '';
       this.temporadaSeleccionada = null;
       this.cargarEpisodios();
     }

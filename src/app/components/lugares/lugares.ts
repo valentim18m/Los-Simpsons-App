@@ -8,15 +8,19 @@ import { Api, Location } from '../../services/api';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './lugares.html',
-  styleUrl: './lugares.css',
 })
 export class LugaresComponent implements OnInit {
   private apiService = inject(Api);
-  private cdr = inject(ChangeDetectorRef); // <-- 1. Inyectamos el actualizador visual
+  private cdr = inject(ChangeDetectorRef);
 
   lugares: Location[] = [];
+
+  // <-- EL CAJÓN SECRETO PARA LUGARES
+  todosLosLugares: Location[] = [];
+
   lugaresFiltrados: Location[] = [];
   terminoBusqueda: string = '';
+
   cargando: boolean = true;
   error: string | null = null;
 
@@ -27,6 +31,35 @@ export class LugaresComponent implements OnInit {
 
   ngOnInit() {
     this.cargarLugares();
+    this.obtenerCatalogoCompleto(); // <-- Descarga silenciosa
+  }
+
+  // <-- DESCARGA RECURSIVA PARA LUGARES
+  obtenerCatalogoCompleto(paginaSilenciosa: number = 1) {
+    this.apiService.getLocations(paginaSilenciosa, 100).subscribe({
+      next: (res: any) => {
+        const lista = Array.isArray(res.results) ? res.results : Array.isArray(res) ? res : [];
+
+        // Acumulamos las locaciones
+        this.todosLosLugares = [...this.todosLosLugares, ...lista];
+
+        // El despertador: si el usuario ya está buscando un lugar, actualizamos
+        if (this.terminoBusqueda) {
+          this.filtrarLugares();
+          this.cdr.detectChanges();
+        }
+
+        // Llamada recursiva si hay más páginas
+        if (res.next) {
+          this.obtenerCatalogoCompleto(paginaSilenciosa + 1);
+        } else {
+          console.log(
+            `✅ ¡Mapa completo! Springfield tiene ${this.todosLosLugares.length} locaciones en memoria.`,
+          );
+        }
+      },
+      error: () => console.warn('Aviso: Error bajando el catálogo de lugares en background'),
+    });
   }
 
   cargarLugares() {
@@ -35,7 +68,6 @@ export class LugaresComponent implements OnInit {
 
     this.apiService.getLocations(this.paginaActual, this.limite).subscribe({
       next: (res: any) => {
-        // La API devuelve { count, next, prev, pages, results: [...] }
         const lista = Array.isArray(res.results) ? res.results : Array.isArray(res) ? res : [];
         this.totalLugares = res.count ?? lista.length;
         this.lugares = lista;
@@ -43,33 +75,31 @@ export class LugaresComponent implements OnInit {
         this.filtrarLugares();
 
         this.cargando = false;
-        this.cdr.detectChanges(); // <-- 2. Despertamos a Angular para que pinte las tarjetas
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al cargar lugares:', err);
-        this.error = 'No se pudo cargar el mapa de Springfield.';
+        this.error = 'No se pudo conectar con el mapa de Springfield.';
         this.cargando = false;
-        this.cdr.detectChanges(); // <-- También redibujamos si falla
+        this.cdr.detectChanges();
       },
     });
   }
 
   filtrarLugares() {
     const termino = this.terminoBusqueda.toLowerCase().trim();
+
     if (!termino) {
       this.lugaresFiltrados = [...this.lugares];
-    } else {
-      this.lugaresFiltrados = this.lugares.filter((l) => {
-        // ESCUDO: Protegemos el código por si un lugar viene vacío o sin nombre
-        if (!l || !l.name) return false;
-
-        // Comprobamos el nombre y también el uso (si es que la API mandó el uso)
-        const coincideNombre = l.name.toLowerCase().includes(termino);
-        const coincideUso = l.use ? l.use.toLowerCase().includes(termino) : false;
-
-        return coincideNombre || coincideUso;
-      });
+      return;
     }
+
+    const baseDeDatos = this.todosLosLugares.length > 0 ? this.todosLosLugares : this.lugares;
+
+    this.lugaresFiltrados = baseDeDatos.filter((l) => {
+      if (!l || !l.name) return false;
+      return l.name.toLowerCase().includes(termino);
+    });
   }
 
   getImagen(lugar: Location): string {

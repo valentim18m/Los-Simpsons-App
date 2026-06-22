@@ -1,73 +1,125 @@
-@if (cargando) {
-  <div class="col-span-full flex flex-col items-center justify-center py-20">
-    <div
-      class="animate-spin rounded-full h-14 w-14 border-4 border-yellow-400 border-t-transparent"
-    ></div>
-    <p class="mt-4 text-gray-500 font-medium">Cargando ciudadanos de Springfield...</p>
+<div class="container mx-auto p-6 font-sans">
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-extrabold text-yellow-400 drop-shadow-md mb-2">
+      💛 Personajes de Springfield
+    </h1>
+    <p class="text-gray-600">Encuentra a tus ciudadanos favoritos</p>
   </div>
-} @else if (error) {
-  <div class="col-span-full text-center py-16">
-    <span class="text-5xl block mb-4">📡</span>
-    <p class="text-xl text-red-500 font-bold">{{ error }}</p>
-    <button
-      (click)="cargarPersonajes()"
-      class="mt-4 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full transition-all"
-    >
-      Reintentar
-    </button>
+
+  <div class="flex justify-center mb-4 px-4">
+    <div class="relative w-full max-w-md">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"> 🔍 </span>
+      <input
+        type="text"
+        [(ngModel)]="terminoBusqueda"
+        (input)="filtrarPersonajes()"
+        placeholder="Buscar personaje por nombre (ej: Homer)..."
+        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+      />
+    </div>
   </div>
-} @else {
-  @for (personaje of personajesFiltrados; track personaje.id) {
-    <div
-      class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col items-center p-4"
-    >
-      <div class="h-48 w-full flex justify-center items-center bg-gray-50 rounded-xl mb-4">
-        <img
-          [src]="getImagen(personaje)"
-          [alt]="personaje.name"
-          class="max-h-full object-contain"
-          (error)="$any($event.target).src = 'https://cdn.thesimpsonsapi.com/500/character/1.webp'"
-        />
+
+  @if (generos.length > 0) {
+    <div class="flex flex-wrap gap-2 justify-center mb-8 mt-4">
+      <button
+        (click)="seleccionarGenero(null)"
+        [class]="
+          generoSeleccionado === null
+            ? 'px-4 py-1.5 rounded-full font-bold text-sm bg-yellow-400 text-white shadow'
+            : 'px-4 py-1.5 rounded-full font-bold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200'
+        "
+      >
+        Todos
+      </button>
+      @for (g of generos; track g) {
+        <button
+          (click)="seleccionarGenero(g)"
+          [class]="
+            generoSeleccionado === g
+              ? 'px-4 py-1.5 rounded-full font-bold text-sm bg-yellow-400 text-white shadow'
+              : 'px-4 py-1.5 rounded-full font-bold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200'
+          "
+        >
+          {{ g === 'Male' ? 'Masculino' : g === 'Female' ? 'Femenino' : g }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (cargando) {
+    <div class="col-span-full flex flex-col items-center justify-center py-20">
+      <div
+        class="animate-spin rounded-full h-14 w-14 border-4 border-yellow-400 border-t-transparent"
+      ></div>
+      <p class="mt-4 text-gray-500 font-medium">Cargando ciudadanos de Springfield...</p>
+    </div>
+  } @else if (error) {
+    <div class="col-span-full text-center py-16">
+      <span class="text-5xl block mb-4">📡</span>
+      <p class="text-xl text-red-500 font-bold">{{ error }}</p>
+      <button
+        (click)="cargarPersonajes()"
+        class="mt-4 px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full transition-all"
+      >
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      @for (personaje of personajesFiltrados; track personaje.id) {
+        <div
+          class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col items-center p-4"
+        >
+          <div class="h-48 w-full flex justify-center items-center bg-gray-50 rounded-xl mb-4">
+            <img
+              [src]="getImagen(personaje)"
+              [alt]="personaje.name"
+              class="max-h-full object-contain"
+              (error)="
+                $any($event.target).src = 'https://cdn.thesimpsonsapi.com/500/character/1.webp'
+              "
+            />
+          </div>
+
+          <h2 class="text-xl font-bold text-gray-800 text-center mb-1">{{ personaje.name }}</h2>
+          <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full text-center">
+            {{ personaje.occupation || 'Desconocido' }}
+          </span>
+
+          <button
+            [routerLink]="['/personaje', personaje.id]"
+            class="mt-4 px-4 py-2 w-full text-center bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full text-sm transition-all shadow-sm"
+          >
+            Ver detalles
+          </button>
+        </div>
+      } @empty {
+        <div class="col-span-full text-center py-10">
+          <p class="text-2xl text-gray-400 font-semibold">
+            ¡Ay caramba! No encontramos a ese personaje.
+          </p>
+        </div>
+      }
+    </div>
+
+    @if (!terminoBusqueda && !generoSeleccionado) {
+      <div class="col-span-full flex justify-center items-center gap-4 mt-6 pb-4">
+        <button
+          (click)="paginaAnterior()"
+          [disabled]="paginaActual === 1"
+          class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
+          ← Anterior
+        </button>
+        <span class="text-gray-600 font-semibold">Página {{ paginaActual }}</span>
+        <button
+          (click)="paginaSiguiente()"
+          [disabled]="!hayMasPaginas"
+          class="px-5 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
+          Siguiente →
+        </button>
       </div>
-
-      <h2 class="text-xl font-bold text-gray-800 text-center mb-1">{{ personaje.name }}</h2>
-      <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full text-center">
-        {{ personaje.occupation || 'Desconocido' }}
-      </span>
-
-      <button
-        [routerLink]="['/personaje', personaje.id]"
-        class="mt-4 px-4 py-2 w-full text-center bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full text-sm transition-all shadow-sm"
-      >
-        Ver detalles
-      </button>
-    </div>
-  } @empty {
-    <div class="col-span-full text-center py-10">
-      <p class="text-2xl text-gray-400 font-semibold">
-        ¡Ay caramba! No encontramos a ese personaje.
-      </p>
-    </div>
+    }
   }
-
-  <!-- Paginación -->
-  @if (!terminoBusqueda) {
-    <div class="col-span-full flex justify-center items-center gap-4 mt-6 pb-4">
-      <button
-        (click)="paginaAnterior()"
-        [disabled]="paginaActual === 1"
-        class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-      >
-        ← Anterior
-      </button>
-      <span class="text-gray-600 font-semibold">Página {{ paginaActual }}</span>
-      <button
-        (click)="paginaSiguiente()"
-        [disabled]="!hayMasPaginas"
-        class="px-5 py-2 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-      >
-        Siguiente →
-      </button>
-    </div>
-  }
-}
+</div>
