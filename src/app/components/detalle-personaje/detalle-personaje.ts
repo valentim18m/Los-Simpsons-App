@@ -12,7 +12,7 @@ import { Api, Character } from '../../services/api';
 export class DetallePersonajeComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private apiService = inject(Api);
-  private cdr = inject(ChangeDetectorRef); // <-- 1. Inyectamos el actualizador visual
+  private cdr = inject(ChangeDetectorRef); // <--. Inyectamos el actualizador visual
 
   personaje: Character | null = null;
   cargando: boolean = true;
@@ -28,7 +28,7 @@ export class DetallePersonajeComponent implements OnInit {
           // La API puede devolver { data: {...} } o el objeto directamente
           this.personaje = res.data ?? res;
           this.cargando = false;
-          this.cdr.detectChanges(); // <-- 2. Le decimos a Angular que redibuje la pantalla con los datos
+          this.cdr.detectChanges(); // <--. Le decimos a Angular que redibuje la pantalla con los datos
         },
         error: (err) => {
           console.error('Error al cargar el personaje:', err);

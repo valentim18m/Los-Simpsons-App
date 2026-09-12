@@ -36,7 +36,7 @@ export class BuscadorComponent implements OnInit {
     this.obtenerCatalogoCompleto(); // <-- 2. Disparamos la búsqueda silenciosa
   }
 
-  // <-- EL PARCHE DEFINITIVO: Descarga Recursiva en Background
+  // <-- Descarga Recursiva en Background
   obtenerCatalogoCompleto(paginaSilenciosa: number = 1) {
     // Pedimos lotes de 100 para no hacer tantas peticiones de golpe
     this.apiService.getCharacters(paginaSilenciosa, 100).subscribe({

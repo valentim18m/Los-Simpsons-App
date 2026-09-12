@@ -1,0 +1,88 @@
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+  <!-- Tarjeta Neo-Brutalista principal -->
+  <div
+    class="w-full max-w-md bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_#000000] rounded-2xl relative overflow-hidden"
+  >
+    <!-- Detalle superior cómic -->
+    <div class="absolute top-0 left-0 right-0 h-4 bg-yellow-400 border-b-4 border-black"></div>
+
+    <div class="text-center mt-4 mb-8">
+      <h2 class="text-3xl font-black tracking-wider uppercase text-black">
+        {{ esRegistro ? '¡Únete al Padrón!' : 'Puesto de Control' }}
+      </h2>
+      <p class="text-gray-700 font-bold mt-2">
+        {{
+          esRegistro
+            ? 'Crea tu credencial de ciudadano'
+            : 'Identifícate para ingresar a Springfield'
+        }}
+      </p>
+    </div>
+
+    <!-- Alerta de error -->
+    <div
+      *ngIf="error"
+      class="mb-6 p-4 bg-red-400 border-4 border-black shadow-[4px_4px_0px_0px_#000000] font-bold text-black text-center"
+    >
+      {{ error }}
+    </div>
+
+    <!-- Formulario -->
+    <form (ngSubmit)="enviarFormulario()" class="space-y-6">
+      <div>
+        <label class="block font-black uppercase text-sm mb-2 text-black">
+          Correo Electrónico
+        </label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="homero@planta-nuclear.com"
+          class="w-full px-4 py-3 bg-yellow-50 border-4 border-black font-bold placeholder-gray-500 focus:outline-none focus:bg-yellow-100 shadow-[4px_4px_0px_0px_#000000] transition-all"
+        />
+      </div>
+
+      <div>
+        <label class="block font-black uppercase text-sm mb-2 text-black">
+          ingrese codigo nuclear
+        </label>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          class="w-full px-4 py-3 bg-yellow-50 border-4 border-black font-bold placeholder-gray-500 focus:outline-none focus:bg-yellow-100 shadow-[4px_4px_0px_0px_#000000] transition-all"
+        />
+      </div>
+
+      <!-- Botón Principal -->
+      <button
+        type="submit"
+        [disabled]="cargando"
+        class="w-full py-4 bg-yellow-400 hover:bg-yellow-300 text-black font-black uppercase tracking-wider border-4 border-black shadow-[6px_6px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-[2px_2px_0px_0px_#000000] transition-all cursor-pointer disabled:opacity-50"
+      >
+        {{
+          cargando
+            ? 'Verificando en la Planta...'
+            : esRegistro
+              ? 'Registrarse en Springfield'
+              : 'Ingresar ahora'
+        }}
+      </button>
+    </form>
+
+    <!-- Alternador de modo -->
+    <div class="mt-8 text-center border-t-2 border-dashed border-gray-300 pt-6">
+      <p class="font-bold text-gray-700">
+        {{ esRegistro ? '¿Ya tienes una credencial?' : '¿Eres nuevo en la ciudad?' }}
+      </p>
+      <button
+        type="button"
+        (click)="alternarModo()"
+        class="mt-2 text-pink-600 hover:text-pink-500 font-black uppercase underline decoration-2 cursor-pointer"
+      >
+        {{ esRegistro ? 'Inicia Sesión aquí' : 'Crea una cuenta gratis' }}
+      </button>
+    </div>
+  </div>
+</div>

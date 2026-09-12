@@ -1,26 +1,32 @@
 <ul class="flex items-center gap-2 font-bold text-yellow-900">
   <li>
-    <a hlmBtn variant="ghost" routerLink="/">
-      Inicio
-    </a>
+    <a hlmBtn variant="ghost" routerLink="/"> Inicio </a>
   </li>
 
   <li>
-    <a hlmBtn variant="ghost" routerLink="/personajes">
-      Personajes
-    </a>
+    <a hlmBtn variant="ghost" routerLink="/personajes"> Personajes </a>
   </li>
 
   <li>
-    <a hlmBtn variant="ghost" routerLink="/episodios">
-      Episodios
-    </a>
+    <a hlmBtn variant="ghost" routerLink="/episodios"> Episodios </a>
   </li>
 
   <li>
-    <a hlmBtn variant="ghost" routerLink="/lugares">
-      Lugares
+    <a hlmBtn variant="ghost" routerLink="/lugares"> Lugares </a>
+  </li>
+  <!-- Pega esto al lado de tus otros enlaces del menú -->
+  <li>
+    <a
+      routerLink="/login"
+      class="px-4 py-1 bg-pink-500 hover:bg-pink-600 text-white font-black uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_0px_#000000] cursor-pointer"
+    >
+      Puesto de Control (Login)
     </a>
   </li>
-
+  <a
+    routerLink="/expedientes"
+    class="px-4 py-1 bg-green-400 hover:bg-green-500 text-black font-black uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_0px_#000000] cursor-pointer transition-all active:translate-x-1 active:translate-y-1 active:shadow-none"
+  >
+    Archivos Secretos
+  </a>
 </ul>

@@ -1,0 +1,120 @@
+<div class="min-h-screen p-8 max-w-5xl mx-auto">
+  <h1
+    class="text-4xl font-black uppercase mb-8 border-b-8 border-black inline-block pr-4 pb-2 text-black"
+  >
+    Archivos Secretos
+  </h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Panel Izquierdo: Formulario (Create / Update) -->
+    <div
+      class="md:col-span-1 bg-pink-400 p-6 border-4 border-black shadow-[8px_8px_0px_0px_#000000] h-fit"
+    >
+      <h2 class="text-2xl font-black uppercase text-black mb-4">
+        {{ modoEdicion ? 'Editar Registro' : 'Nuevo Expediente' }}
+      </h2>
+
+      <!-- Cambio clave 1: Formulario sin ngSubmit -->
+      <form class="space-y-4">
+        <div>
+          <label class="font-bold text-black uppercase text-sm">Nombre del Ciudadano</label>
+          <input
+            type="text"
+            [(ngModel)]="nuevoNombre"
+            name="nombre"
+            required
+            class="w-full mt-1 p-2 border-4 border-black font-bold focus:outline-none focus:bg-yellow-100 shadow-[4px_4px_0px_0px_#000000]"
+          />
+        </div>
+
+        <div>
+          <label class="font-bold text-black uppercase text-sm">Ocupación / Rol</label>
+          <input
+            type="text"
+            [(ngModel)]="nuevaOcupacion"
+            name="ocupacion"
+            required
+            class="w-full mt-1 p-2 border-4 border-black font-bold focus:outline-none focus:bg-yellow-100 shadow-[4px_4px_0px_0px_#000000]"
+          />
+        </div>
+
+        <div>
+          <label class="font-bold text-black uppercase text-sm">Nivel de Peligrosidad</label>
+          <select
+            [(ngModel)]="nuevoNivel"
+            name="nivel"
+            class="w-full mt-1 p-2 border-4 border-black font-bold focus:outline-none cursor-pointer shadow-[4px_4px_0px_0px_#000000]"
+          >
+            <option value="Bajo">Bajo (Inofensivo)</option>
+            <option value="Medio">Medio (Cuidado)</option>
+            <option value="Alto">Alto (Amenaza)</option>
+          </select>
+        </div>
+
+        <!-- Cambio clave 2: type="button" y evento (click) -->
+        <button
+          type="button"
+          (click)="guardarExpediente()"
+          class="w-full py-3 mt-4 bg-yellow-400 hover:bg-yellow-300 text-black font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all cursor-pointer"
+        >
+          {{ modoEdicion ? 'Guardar Cambios' : 'Registrar' }}
+        </button>
+
+        <button
+          *ngIf="modoEdicion"
+          type="button"
+          (click)="limpiarFormulario()"
+          class="w-full py-2 bg-white text-black font-bold uppercase border-4 border-black mt-2 hover:bg-gray-200 cursor-pointer"
+        >
+          Cancelar
+        </button>
+      </form>
+    </div>
+
+    <!-- Panel Derecho: Lista de Expedientes (Read / Delete) -->
+    <div class="md:col-span-2 space-y-4">
+      <div
+        *ngIf="expedientes.length === 0"
+        class="p-6 bg-yellow-100 border-4 border-black font-bold text-center"
+      >
+        No hay expedientes registrados en la base de datos.
+      </div>
+
+      <!-- Tarjetas Renderizadas desde Firebase -->
+      <div
+        *ngFor="let exp of expedientes"
+        class="bg-white p-4 border-4 border-black shadow-[6px_6px_0px_0px_#000000] flex justify-between items-center transition-transform hover:-translate-y-1"
+      >
+        <div>
+          <h3 class="text-xl font-black text-black uppercase">{{ exp.nombre }}</h3>
+          <p class="text-gray-700 font-bold">{{ exp.ocupacion }}</p>
+          <span
+            class="inline-block px-2 py-1 mt-2 text-xs font-black uppercase border-2 border-black"
+            [ngClass]="{
+              'bg-green-400': exp.nivelPeligrosidad === 'Bajo',
+              'bg-yellow-400': exp.nivelPeligrosidad === 'Medio',
+              'bg-red-500 text-white': exp.nivelPeligrosidad === 'Alto',
+            }"
+          >
+            Peligrosidad: {{ exp.nivelPeligrosidad }}
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <button
+            (click)="editar(exp)"
+            class="px-4 py-2 bg-blue-400 font-black text-black uppercase border-4 border-black shadow-[2px_2px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none cursor-pointer"
+          >
+            Editar
+          </button>
+          <button
+            (click)="eliminar(exp.id)"
+            class="px-4 py-2 bg-red-500 font-black text-white uppercase border-4 border-black shadow-[2px_2px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none cursor-pointer"
+          >
+            Borrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
