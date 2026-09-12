@@ -1,9 +1,19 @@
 <div class="min-h-screen p-8 max-w-5xl mx-auto">
-  <h1
-    class="text-4xl font-black uppercase mb-8 border-b-8 border-black inline-block pr-4 pb-2 text-black"
-  >
-    Archivos Secretos
-  </h1>
+  <!-- Contenedor del Título y el Botón PDF -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <h1
+      class="text-4xl font-black uppercase border-b-8 border-black inline-block pr-4 pb-2 text-black mb-0"
+    >
+      Archivos Secretos
+    </h1>
+
+    <button
+      (click)="generarPDF()"
+      class="px-6 py-3 bg-white hover:bg-gray-200 text-black font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all cursor-pointer"
+    >
+      Descargar Dossier PDF
+    </button>
+  </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
     <!-- Panel Izquierdo: Formulario (Create / Update) -->
@@ -14,7 +24,6 @@
         {{ modoEdicion ? 'Editar Registro' : 'Nuevo Expediente' }}
       </h2>
 
-      <!-- Cambio clave 1: Formulario sin ngSubmit -->
       <form class="space-y-4">
         <div>
           <label class="font-bold text-black uppercase text-sm">Nombre del Ciudadano</label>
@@ -51,7 +60,6 @@
           </select>
         </div>
 
-        <!-- Cambio clave 2: type="button" y evento (click) -->
         <button
           type="button"
           (click)="guardarExpediente()"

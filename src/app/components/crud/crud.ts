@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirestoreService, Expediente } from '../../services/firestore';
 import { NotificacionesService } from '../../services/notificaciones.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-crud',
@@ -28,7 +30,28 @@ export class CrudComponent implements OnInit {
       this.expedientes = data;
     });
   }
+  generarPDF() {
+    const doc = new jsPDF();
 
+    doc.setFontSize(18);
+    doc.text('Reporte de Archivos Secretos - Springfield', 14, 20);
+
+    const datosTabla = this.expedientes.map((exp) => [
+      exp.nombre,
+      exp.ocupacion,
+      exp.nivelPeligrosidad,
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [['Nombre del Ciudadano', 'Ocupación', 'Nivel de Peligrosidad']],
+      body: datosTabla,
+      theme: 'grid',
+      headStyles: { fillColor: [250, 204, 21], textColor: [0, 0, 0], fontStyle: 'bold' },
+    });
+
+    doc.save('reporte_springfield.pdf');
+  }
   guardarExpediente() {
     if (!this.nuevoNombre || !this.nuevaOcupacion) return;
 
