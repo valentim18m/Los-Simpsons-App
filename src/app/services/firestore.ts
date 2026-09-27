@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 // Importamos TODO estrictamente desde el núcleo puro de Firebase
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
   getFirestore,
   collection,
@@ -37,8 +37,8 @@ export class FirestoreService {
   private db: any;
 
   constructor() {
-    // Inicializamos la app nativa en el momento que nace el servicio
-    const app = initializeApp(firebaseConfig);
+    // Reutilizamos la app ya inicializada por app.config.ts (si existe)
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     this.db = getFirestore(app);
   }
 
