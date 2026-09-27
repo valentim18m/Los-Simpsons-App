@@ -90,7 +90,7 @@
 
       <!-- Tarjetas Renderizadas desde Firebase -->
       <div
-        *ngFor="let exp of expedientes"
+        *ngFor="let exp of expedientes; trackBy: trackById"
         class="bg-white p-4 border-4 border-black shadow-[6px_6px_0px_0px_#000000] flex justify-between items-center transition-transform hover:-translate-y-1"
       >
         <div>

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, NgZone } from '@angular/core';
 // Importamos TODO estrictamente desde el núcleo puro de Firebase
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
@@ -35,6 +35,7 @@ const firebaseConfig = {
 })
 export class FirestoreService {
   private db: any;
+  private ngZone = inject(NgZone);
 
   constructor() {
     // Reutilizamos la app ya inicializada por app.config.ts (si existe)
@@ -42,32 +43,41 @@ export class FirestoreService {
     this.db = getFirestore(app);
   }
 
-  agregarExpediente(expediente: Expediente) {
+  agregarExpediente(expediente: Expediente): Promise<any> {
     const expedientesRef = collection(this.db, 'expedientes');
-    return addDoc(expedientesRef, expediente);
+    return addDoc(expedientesRef, expediente).then((result) => {
+      return this.ngZone.run(() => result);
+    });
   }
 
   obtenerExpedientes(): Observable<Expediente[]> {
     return new Observable((observer) => {
       const expedientesRef = collection(this.db, 'expedientes');
       const unsubscribe = onSnapshot(expedientesRef, (snapshot) => {
-        const expedientes = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Expediente[];
-        observer.next(expedientes);
+        // Ejecutamos dentro de NgZone para que Angular detecte los cambios
+        this.ngZone.run(() => {
+          const expedientes = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Expediente[];
+          observer.next(expedientes);
+        });
       });
       return () => unsubscribe();
     });
   }
 
-  actualizarExpediente(id: string, datosNuevos: Partial<Expediente>) {
+  actualizarExpediente(id: string, datosNuevos: Partial<Expediente>): Promise<void> {
     const docRef = doc(this.db, `expedientes/${id}`);
-    return updateDoc(docRef, datosNuevos);
+    return updateDoc(docRef, datosNuevos).then(() => {
+      return this.ngZone.run(() => {});
+    });
   }
 
-  eliminarExpediente(id: string) {
+  eliminarExpediente(id: string): Promise<void> {
     const docRef = doc(this.db, `expedientes/${id}`);
-    return deleteDoc(docRef);
+    return deleteDoc(docRef).then(() => {
+      return this.ngZone.run(() => {});
+    });
   }
 }

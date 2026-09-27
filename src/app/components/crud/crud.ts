@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirestoreService, Expediente } from '../../services/firestore';
@@ -15,6 +15,8 @@ import autoTable from 'jspdf-autotable';
 export class CrudComponent implements OnInit {
   private firestoreService = inject(FirestoreService);
   private notificacionesService = inject(NotificacionesService);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   expedientes: Expediente[] = [];
 
@@ -25,11 +27,20 @@ export class CrudComponent implements OnInit {
   modoEdicion: boolean = false;
   idEdicion: string | null = null;
 
+  // trackBy para evitar que Angular destruya y recree todo el DOM en cada cambio
+  trackById(index: number, item: Expediente): string {
+    return item.id || index.toString();
+  }
+
   ngOnInit() {
     this.firestoreService.obtenerExpedientes().subscribe((data) => {
-      this.expedientes = data;
+      this.ngZone.run(() => {
+        this.expedientes = data;
+        this.cdr.detectChanges();
+      });
     });
   }
+
   generarPDF() {
     const doc = new jsPDF();
 
@@ -52,32 +63,37 @@ export class CrudComponent implements OnInit {
 
     doc.save('reporte_springfield.pdf');
   }
-  guardarExpediente() {
+
+  async guardarExpediente() {
     if (!this.nuevoNombre || !this.nuevaOcupacion) return;
 
-    // Disparamos la alerta INMEDIATAMENTE al hacer clic
-    this.notificacionesService.exitoGuardado(this.nuevoNombre);
+    const nombreGuardado = this.nuevoNombre;
 
-    if (this.modoEdicion && this.idEdicion) {
-      // UPDATE
-      this.firestoreService
-        .actualizarExpediente(this.idEdicion, {
+    try {
+      if (this.modoEdicion && this.idEdicion) {
+        // UPDATE
+        await this.firestoreService.actualizarExpediente(this.idEdicion, {
           nombre: this.nuevoNombre,
           ocupacion: this.nuevaOcupacion,
           nivelPeligrosidad: this.nuevoNivel,
-        })
-        .then(() => this.limpiarFormulario())
-        .catch(() => this.notificacionesService.errorSistema());
-    } else {
-      // CREATE
-      this.firestoreService
-        .agregarExpediente({
+        });
+      } else {
+        // CREATE
+        await this.firestoreService.agregarExpediente({
           nombre: this.nuevoNombre,
           ocupacion: this.nuevaOcupacion,
           nivelPeligrosidad: this.nuevoNivel,
-        })
-        .then(() => this.limpiarFormulario())
-        .catch(() => this.notificacionesService.errorSistema());
+        });
+      }
+
+      this.ngZone.run(() => {
+        this.limpiarFormulario();
+        this.cdr.detectChanges();
+      });
+
+      this.notificacionesService.exitoGuardado(nombreGuardado);
+    } catch (error) {
+      this.notificacionesService.errorSistema();
     }
   }
 
@@ -87,17 +103,23 @@ export class CrudComponent implements OnInit {
     this.nuevoNombre = expediente.nombre;
     this.nuevaOcupacion = expediente.ocupacion;
     this.nuevoNivel = expediente.nivelPeligrosidad;
+    this.cdr.detectChanges();
   }
 
-  eliminar(id: string | undefined) {
-    if (id) {
-      // Disparamos la alerta de Homero INMEDIATAMENTE
-      this.notificacionesService.exitoEliminacion();
+  async eliminar(id: string | undefined) {
+    if (!id) return;
 
+    try {
       // DELETE
-      this.firestoreService
-        .eliminarExpediente(id)
-        .catch(() => this.notificacionesService.errorSistema());
+      await this.firestoreService.eliminarExpediente(id);
+
+      this.ngZone.run(() => {
+        this.cdr.detectChanges();
+      });
+
+      this.notificacionesService.exitoEliminacion();
+    } catch (error) {
+      this.notificacionesService.errorSistema();
     }
   }
 
